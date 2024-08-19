@@ -1,10 +1,12 @@
-### Yocto: Detailed Guide on Package Splitting During the `do_package()` Stage Using `PACKAGES` and `FILES` Variables
+Here is the updated guide with the example recipe to add a `readme.txt` file to the documentation directory and create a custom package `${PN}-mydoc`.
+
+---
+
+## Yocto: Detailed Guide on Package Splitting During the `do_package()` Stage Using `PACKAGES` and `FILES` Variables
 
 When building packages with Yocto, especially with the **Kirkstone** release (or any other release), managing how files are split into different packages is essential. The **`PACKAGES`** and **`FILES`** variables are used to control which files go into which packages.
 
 Here is a step-by-step tutorial that will provide you with in-depth knowledge about package splitting during the `do_package()` stage.
-
----
 
 ### 1. **The `do_package()` Task**
 
@@ -77,50 +79,59 @@ You can use these variables to specify file locations in your packages.
 
 ---
 
-### 5. **Example: Creating a Custom Package**
+### 5. **Example: Creating a Custom Package with a README File**
 
-Let’s go through a practical example of splitting files into multiple packages.
+In this example, we will create a simple recipe that adds a `readme.txt` file to the documentation directory and splits the package into a custom package named `${PN}-mydoc`.
 
-#### Step 1: Define `PACKAGES`
-```bash
-PACKAGES = "${PN}-bin ${PN}-lib ${PN}-doc ${PN}-config"
+#### Step 1: Create a `readme.txt` File
+Add a `readme.txt` file to your recipe source folder:
+```txt
+This is the readme for my custom Yocto package.
 ```
 
-- **`${PN}-bin`**: Will contain binary files.
-- **`${PN}-lib`**: Will contain shared libraries.
-- **`${PN}-doc`**: Will contain documentation.
-- **`${PN}-config`**: Will contain configuration files.
-
-#### Step 2: Define `FILES`
-```bash
-FILES_${PN}-bin = "${bindir}/*"
-FILES_${PN}-lib = "${libdir}/*.so*"
-FILES_${PN}-doc = "${docdir}/*"
-FILES_${PN}-config = "${sysconfdir}/*"
-```
-
-- **`${PN}-bin`**: All binaries in `/usr/bin/`.
-- **`${PN}-lib`**: All shared libraries (`.so` files) in `/usr/lib/`.
-- **`${PN}-doc`**: All files in the documentation directory `/usr/share/doc/`.
-- **`${PN}-config`**: All configuration files in `/etc/`.
-
-#### Step 3: Additional Customizations
-You can include more specific patterns in `FILES` if needed. For instance:
-```bash
-FILES_${PN}-lib = "${libdir}/libexample.so.*"
-```
-This example ensures that only certain shared libraries are included.
-
-#### Step 4: Other Package Types
-
-You can also include other package types like:
-- **Development Files**: `${PN}-dev`
-- **Debug Symbols**: `${PN}-dbg`
+#### Step 2: Write the Recipe (`mypackage_1.0.0.bb`)
 
 ```bash
-FILES_${PN}-dev = "${includedir}/* ${libdir}/*.a ${libdir}/*.la"
-FILES_${PN}-dbg = "${bindir}/.debug/* ${libdir}/.debug/*"
+SUMMARY = "My Custom Yocto Package"
+LICENSE = "CLOSED"
+SRC_URI = "file://readme.txt"
+
+# Define the list of packages
+PACKAGES = "${PN} ${PN}-mydoc"
+
+# Assign files to the packages
+FILES_${PN} = "${bindir}/*"
+FILES_${PN}-mydoc = "${docdir}/readme.txt"
+
+do_install() {
+    # Install the readme.txt into the documentation directory
+    install -d ${D}${docdir}
+    install -m 0644 ${WORKDIR}/readme.txt ${D}${docdir}/readme.txt
+}
 ```
+
+#### Explanation:
+- **`PACKAGES`**: Specifies two packages: `${PN}` (default) and `${PN}-mydoc` (custom package).
+- **`FILES_${PN}-mydoc`**: Specifies that the `readme.txt` file will go into the `${docdir}` (usually `/usr/share/doc`).
+- **`do_install()`**: Copies `readme.txt` to the documentation directory during the install step.
+
+#### Step 3: Build the Recipe
+To build and test the recipe:
+```bash
+bitbake mypackage
+```
+
+Once built, the resulting packages will include:
+- **`mypackage`**: The default package.
+- **`mypackage-mydoc`**: The custom package containing the `readme.txt` file.
+
+#### Step 4: Verify Package Contents
+You can inspect the contents of the package using:
+```bash
+oe-pkgdata-util list-pkg-files mypackage-mydoc
+```
+
+This will list all files in the `mypackage-mydoc` package to verify that `readme.txt` has been placed correctly in the documentation directory.
 
 ---
 
@@ -173,17 +184,11 @@ This command lists all the files contained in a particular package and ensures t
 
 ---
 
-### 9. **Best Practices**
-
-- Ensure that development and runtime files are properly separated to avoid installing unnecessary files on production systems.
-- Use proper directory variables like `${bindir}`, `${libdir}`, etc., to make recipes portable across different platforms.
-- Regularly verify the package contents with `oe-pkgdata-util` to prevent any files from being misplaced.
-- Manage dependencies carefully using `RDEPENDS` and `RRECOMMENDS`.
-
----
-
 ### Conclusion
 
 This tutorial covers the process of package splitting during the `do_package()` stage in Yocto using the `PACKAGES` and `FILES` variables. With this knowledge, you can efficiently manage how your recipe’s files are divided into packages, ensuring that each package contains the right components for deployment on the target system.
 
-Feel free to customize further for your specific project needs. Let me know if you have more questions related to Yocto Kirkstone!
+In the example above, we created a custom package `${PN}-mydoc` that includes a `readme.txt` file in the documentation directory. Feel free to customize further for your specific project needs. Let me know if you have more questions related to Yocto Kirkstone!
+
+---
+
