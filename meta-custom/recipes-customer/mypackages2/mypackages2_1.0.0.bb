@@ -14,13 +14,16 @@ S = "${WORKDIR}"
 # Specify the custom package name
 PACKAGES = "${PN} ${PN}-test"
 
+
 # Define the installation steps
 do_install() {
-    install -d ${D}${datadir}/mydir
-    install -m 0644 readme.txt ${D}${datadir}/mydir
+     install -d ${D}${datadir}/mydir
+     install -m 0644 readme.txt ${D}${datadir}/mydir
+
+     install -d ${D}${datadir}/mydirtest
+     install -m 0644 readme.txt ${D}${datadir}/mydirtest
 }
 
 # Ensure the files are split correctly between packages
 FILES:${PN} += "${datadir}/mydir/readme.txt"
-FILES:${PN}-test += "${datadir}/mydir/readme.txt"
-
+FILES:${PN}-test += "${datadir}/mydirtest/readme.txt"
