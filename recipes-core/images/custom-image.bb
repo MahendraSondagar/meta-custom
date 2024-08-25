@@ -31,6 +31,7 @@ IMAGE_INSTALL:append = " python3 python3-pip \
                          hello-mod \
                          mymake    \
                          mygit     \
+                         userprog    \
                          module-init-tools \
                          "
 
