@@ -105,7 +105,6 @@ This should print "Hello world, This is lspci example" and then list the PCI dev
 
 This example demonstrates the use of the `RDEPENDS` variable in Yocto recipes. By declaring runtime dependencies with `RDEPENDS`, you ensure that all necessary packages are available when your program runs on the target system. This approach simplifies dependency management and ensures a smoother deployment process.
 
-Feel free to modify and extend this example to suit your specific needs!
 
 ---
 
