@@ -7,23 +7,22 @@ AUTHOR = "Mahendra Sondagar (mahendrasondagar08@gmail.com)"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302"
 
-SRC_URI = "file://readme.txt"
+SRC_URI = "file://myreadme.txt"
 
 S = "${WORKDIR}"
 
-# Specify the custom package name
-PACKAGES = "${PN} ${PN}-test"
+
+# Define the list of packages
+PACKAGES = "${PN}-test"
 
 
-# Define the installation steps
+
+# Assign files to the custom doc package
+FILES:${PN}-test += "${docdir}/myreadme.txt"
+
 do_install() {
-     install -d ${D}${datadir}/mydir
-     install -m 0644 readme.txt ${D}${datadir}/mydir
-
-     install -d ${D}${datadir}/mydirtest
-     install -m 0644 readme.txt ${D}${datadir}/mydirtest
+    # Install the readme.txt into the documentation directory
+    install -d ${D}${docdir}
+    install -m 0644 ${WORKDIR}/myreadme.txt ${D}${docdir}/myreadme.txt
 }
 
-# Ensure the files are split correctly between packages
-FILES:${PN} += "${datadir}/mydir/readme.txt"
-FILES:${PN}-test += "${datadir}/mydirtest/readme.txt"

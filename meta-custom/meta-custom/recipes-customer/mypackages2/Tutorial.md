@@ -192,4 +192,3 @@ In the example above, we created a custom package `${PN}-mydoc` that includes a 
 
 ---
 
-

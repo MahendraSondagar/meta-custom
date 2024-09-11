@@ -1,194 +1,265 @@
-Here is the updated guide with the example recipe to add a `readme.txt` file to the documentation directory and create a custom package `${PN}-mydoc`.
+\### Yocto: Detailed Guide on Package Splitting During the \`do\_package()\` Stage Using \`PACKAGES\` and \`FILES\` Variables
 
----
+When building packages with Yocto, especially with the \*\*Kirkstone\*\* release (or any other release), managing how files are split into different packages is essential. The \*\*\`PACKAGES\`\*\* and \*\*\`FILES\`\*\* variables are used to control which files go into which packages.
 
-## Yocto: Detailed Guide on Package Splitting During the `do_package()` Stage Using `PACKAGES` and `FILES` Variables
+Here is a step-by-step tutorial that will provide you with in-depth knowledge about package splitting during the \`do\_package()\` stage.
 
-When building packages with Yocto, especially with the **Kirkstone** release (or any other release), managing how files are split into different packages is essential. The **`PACKAGES`** and **`FILES`** variables are used to control which files go into which packages.
+\---
 
-Here is a step-by-step tutorial that will provide you with in-depth knowledge about package splitting during the `do_package()` stage.
+\### 1. \*\*The \`do\_package()\` Task\*\*
 
-### 1. **The `do_package()` Task**
+Yocto's \`do\_package()\` stage is responsible for taking the compiled files from the \`WORKDIR\` and splitting them into multiple output packages. The splitting is governed by two key variables:
 
-Yocto's `do_package()` stage is responsible for taking the compiled files from the `WORKDIR` and splitting them into multiple output packages. The splitting is governed by two key variables:
-- **`PACKAGES`**: Defines the list of output packages.
-- **`FILES`**: Specifies which files go into which package.
+\- \*\*\`PACKAGES\`\*\*: Defines the list of output packages.
+
+\- \*\*\`FILES\`\*\*: Specifies which files go into which package.
 
 These packages can then be installed on a target system, and each one can contain specific files, libraries, or binaries.
 
----
+\---
 
-### 2. **Understanding the `PACKAGES` Variable**
+\### 2. \*\*Understanding the \`PACKAGES\` Variable\*\*
 
-The `PACKAGES` variable lists all the packages that will be created by your recipe. If you don’t explicitly define `PACKAGES`, Yocto uses defaults.
+The \`PACKAGES\` variable lists all the packages that will be created by your recipe. If you don’t explicitly define \`PACKAGES\`, Yocto uses defaults.
 
-#### Default Packages
+\#### Default Packages
+
 Yocto provides default package names if you don’t define them:
-- **`${PN}`**: The main package (package name comes from the recipe name)
-- **`${PN}-dev`**: Development files (headers, etc.)
-- **`${PN}-dbg`**: Debug symbols
-- **`${PN}-doc`**: Documentation files
-- **`${PN}-staticdev`**: Static libraries
 
-#### Customizing `PACKAGES`
+\- \*\*\`${PN}\`\*\*: The main package (package name comes from the recipe name)
+
+\- \*\*\`${PN}-dev\`\*\*: Development files (headers, etc.)
+
+\- \*\*\`${PN}-dbg\`\*\*: Debug symbols
+
+\- \*\*\`${PN}-doc\`\*\*: Documentation files
+
+\- \*\*\`${PN}-staticdev\`\*\*: Static libraries
+
+\#### Customizing \`PACKAGES\`
+
 You can override the default and create custom packages:
-```bash
+
+\`\`\`bash
+
 PACKAGES = "${PN}-bin ${PN}-lib ${PN}-doc ${PN}-config"
-```
 
-Here, `${PN}-bin`, `${PN}-lib`, `${PN}-doc`, and `${PN}-config` are custom packages. You will define what files go into each of these packages using the `FILES` variable.
+\`\`\`
 
----
+Here, \`${PN}-bin\`, \`${PN}-lib\`, \`${PN}-doc\`, and \`${PN}-config\` are custom packages. You will define what files go into each of these packages using the \`FILES\` variable.
 
-### 3. **Understanding the `FILES` Variable**
+\---
 
-The `FILES` variable is used to specify what files go into each package listed in `PACKAGES`. Each package must have an associated `FILES_<package>` variable, which contains the list of paths or files to be included in that package.
+\### 3. \*\*Understanding the \`FILES\` Variable\*\*
 
-#### Example:
+The \`FILES\` variable is used to specify what files go into each package listed in \`PACKAGES\`. Each package must have an associated \`FILES\_\` variable, which contains the list of paths or files to be included in that package.
 
-```bash
-FILES_${PN}-bin = "${bindir}/*"
-FILES_${PN}-lib = "${libdir}/*.so*"
-FILES_${PN}-doc = "${docdir}/*"
-FILES_${PN}-config = "${sysconfdir}/*"
-```
+\#### Example:
+
+\`\`\`bash
+
+FILES\_${PN}-bin = "${bindir}/\*"
+
+FILES\_${PN}-lib = "${libdir}/\*.so\*"
+
+FILES\_${PN}-doc = "${docdir}/\*"
+
+FILES\_${PN}-config = "${sysconfdir}/\*"
+
+\`\`\`
 
 Here’s what these variables do:
-- **`${bindir}`**: The directory where binaries go (typically `/usr/bin`)
-- **`${libdir}`**: The directory for libraries (usually `/usr/lib`)
-- **`${docdir}`**: The directory for documentation (typically `/usr/share/doc`)
-- **`${sysconfdir}`**: The directory for configuration files (usually `/etc`)
 
-Each `FILES_<package>` entry specifies the file path patterns to include in the respective package.
+\- \*\*\`${bindir}\`\*\*: The directory where binaries go (typically \`/usr/bin\`)
 
----
+\- \*\*\`${libdir}\`\*\*: The directory for libraries (usually \`/usr/lib\`)
 
-### 4. **File Locations and Variables**
+\- \*\*\`${docdir}\`\*\*: The directory for documentation (typically \`/usr/share/doc\`)
+
+\- \*\*\`${sysconfdir}\`\*\*: The directory for configuration files (usually \`/etc\`)
+
+Each \`FILES\_\` entry specifies the file path patterns to include in the respective package.
+
+\---
+
+\### 4. \*\*File Locations and Variables\*\*
 
 Yocto uses a number of predefined variables to refer to specific directories in the root filesystem. Here’s a list of commonly used ones:
-- **`${bindir}`**: `/usr/bin` — Binary executables
-- **`${sbindir}`**: `/usr/sbin` — System binaries
-- **`${libdir}`**: `/usr/lib` — Libraries
-- **`${includedir}`**: `/usr/include` — Header files
-- **`${datadir}`**: `/usr/share` — Architecture-independent data
-- **`${docdir}`**: `/usr/share/doc` — Documentation
-- **`${mandir}`**: `/usr/share/man` — Manual pages
-- **`${sysconfdir}`**: `/etc` — System configuration files
+
+\- \*\*\`${bindir}\`\*\*: \`/usr/bin\` — Binary executables
+
+\- \*\*\`${sbindir}\`\*\*: \`/usr/sbin\` — System binaries
+
+\- \*\*\`${libdir}\`\*\*: \`/usr/lib\` — Libraries
+
+\- \*\*\`${includedir}\`\*\*: \`/usr/include\` — Header files
+
+\- \*\*\`${datadir}\`\*\*: \`/usr/share\` — Architecture-independent data
+
+\- \*\*\`${docdir}\`\*\*: \`/usr/share/doc\` — Documentation
+
+\- \*\*\`${mandir}\`\*\*: \`/usr/share/man\` — Manual pages
+
+\- \*\*\`${sysconfdir}\`\*\*: \`/etc\` — System configuration files
 
 You can use these variables to specify file locations in your packages.
 
----
+\---
 
-### 5. **Example: Creating a Custom Package with a README File**
+\### 5. \*\*Example: Creating a Custom Package\*\*
 
-In this example, we will create a simple recipe that adds a `readme.txt` file to the documentation directory and splits the package into a custom package named `${PN}-mydoc`.
+Let’s go through a practical example of splitting files into multiple packages.
 
-#### Step 1: Create a `readme.txt` File
-Add a `readme.txt` file to your recipe source folder:
-```txt
-This is the readme for my custom Yocto package.
-```
+\#### Step 1: Define \`PACKAGES\`
 
-#### Step 2: Write the Recipe (`mypackage_1.0.0.bb`)
+\`\`\`bash
 
-```bash
-SUMMARY = "My Custom Yocto Package"
-LICENSE = "CLOSED"
-SRC_URI = "file://readme.txt"
+PACKAGES = "${PN}-bin ${PN}-lib ${PN}-doc ${PN}-config"
 
-# Define the list of packages
-PACKAGES = "${PN} ${PN}-mydoc"
+\`\`\`
 
-# Assign files to the packages
-FILES_${PN} = "${bindir}/*"
-FILES_${PN}-mydoc = "${docdir}/readme.txt"
+\- \*\*\`${PN}-bin\`\*\*: Will contain binary files.
 
-do_install() {
-    # Install the readme.txt into the documentation directory
-    install -d ${D}${docdir}
-    install -m 0644 ${WORKDIR}/readme.txt ${D}${docdir}/readme.txt
-}
-```
+\- \*\*\`${PN}-lib\`\*\*: Will contain shared libraries.
 
-#### Explanation:
-- **`PACKAGES`**: Specifies two packages: `${PN}` (default) and `${PN}-mydoc` (custom package).
-- **`FILES_${PN}-mydoc`**: Specifies that the `readme.txt` file will go into the `${docdir}` (usually `/usr/share/doc`).
-- **`do_install()`**: Copies `readme.txt` to the documentation directory during the install step.
+\- \*\*\`${PN}-doc\`\*\*: Will contain documentation.
 
-#### Step 3: Build the Recipe
-To build and test the recipe:
-```bash
-bitbake mypackage
-```
+\- \*\*\`${PN}-config\`\*\*: Will contain configuration files.
 
-Once built, the resulting packages will include:
-- **`mypackage`**: The default package.
-- **`mypackage-mydoc`**: The custom package containing the `readme.txt` file.
+\#### Step 2: Define \`FILES\`
 
-#### Step 4: Verify Package Contents
-You can inspect the contents of the package using:
-```bash
-oe-pkgdata-util list-pkg-files mypackage-mydoc
-```
+\`\`\`bash
 
-This will list all files in the `mypackage-mydoc` package to verify that `readme.txt` has been placed correctly in the documentation directory.
+FILES\_${PN}-bin = "${bindir}/\*"
 
----
+FILES\_${PN}-lib = "${libdir}/\*.so\*"
 
-### 6. **Fine-Tuning with `RDEPENDS` and `RRECOMMENDS`**
+FILES\_${PN}-doc = "${docdir}/\*"
+
+FILES\_${PN}-config = "${sysconfdir}/\*"
+
+\`\`\`
+
+\- \*\*\`${PN}-bin\`\*\*: All binaries in \`/usr/bin/\`.
+
+\- \*\*\`${PN}-lib\`\*\*: All shared libraries (\`.so\` files) in \`/usr/lib/\`.
+
+\- \*\*\`${PN}-doc\`\*\*: All files in the documentation directory \`/usr/share/doc/\`.
+
+\- \*\*\`${PN}-config\`\*\*: All configuration files in \`/etc/\`.
+
+\#### Step 3: Additional Customizations
+
+You can include more specific patterns in \`FILES\` if needed. For instance:
+
+\`\`\`bash
+
+FILES\_${PN}-lib = "${libdir}/libexample.so.\*"
+
+\`\`\`
+
+This example ensures that only certain shared libraries are included.
+
+\#### Step 4: Other Package Types
+
+You can also include other package types like:
+
+\- \*\*Development Files\*\*: \`${PN}-dev\`
+
+\- \*\*Debug Symbols\*\*: \`${PN}-dbg\`
+
+\`\`\`bash
+
+FILES\_${PN}-dev = "${includedir}/\* ${libdir}/\*.a ${libdir}/\*.la"
+
+FILES\_${PN}-dbg = "${bindir}/.debug/\* ${libdir}/.debug/\*"
+
+\`\`\`
+
+\---
+
+\### 6. \*\*Fine-Tuning with \`RDEPENDS\` and \`RRECOMMENDS\`\*\*
 
 After defining packages, you may want to specify dependencies:
-- **`RDEPENDS_<package>`**: Specifies runtime dependencies of a package.
-- **`RRECOMMENDS_<package>`**: Specifies recommended runtime dependencies (optional but suggested).
 
-For example, if the `${PN}-config` package needs to depend on `${PN}-bin`, you can do:
-```bash
-RDEPENDS_${PN}-config = "${PN}-bin"
-```
+\- \*\*\`RDEPENDS\_\`\*\*: Specifies runtime dependencies of a package.
 
----
+\- \*\*\`RRECOMMENDS\_\`\*\*: Specifies recommended runtime dependencies (optional but suggested).
 
-### 7. **Splitting Static and Shared Libraries**
+For example, if the \`${PN}-config\` package needs to depend on \`${PN}-bin\`, you can do:
+
+\`\`\`bash
+
+RDEPENDS\_${PN}-config = "${PN}-bin"
+
+\`\`\`
+
+\---
+
+\### 7. \*\*Splitting Static and Shared Libraries\*\*
 
 To split libraries into static and shared, you could write:
 
-```bash
+\`\`\`bash
+
 PACKAGES = "${PN}-staticdev ${PN}-lib ${PN}-dev"
-FILES_${PN}-lib = "${libdir}/*.so*"
-FILES_${PN}-staticdev = "${libdir}/*.a"
-FILES_${PN}-dev = "${includedir}/*"
-```
+
+FILES\_${PN}-lib = "${libdir}/\*.so\*"
+
+FILES\_${PN}-staticdev = "${libdir}/\*.a"
+
+FILES\_${PN}-dev = "${includedir}/\*"
+
+\`\`\`
 
 This setup ensures:
-- **`${PN}-lib`** contains shared libraries.
-- **`${PN}-staticdev`** contains static libraries.
-- **`${PN}-dev`** contains header files.
 
----
+\- \*\*\`${PN}-lib\`\*\* contains shared libraries.
 
-### 8. **Testing and Debugging Package Splitting**
+\- \*\*\`${PN}-staticdev\`\*\* contains static libraries.
+
+\- \*\*\`${PN}-dev\`\*\* contains header files.
+
+\---
+
+\### 8. \*\*Testing and Debugging Package Splitting\*\*
 
 Once your recipe is written, you can test and verify the package splitting by building the recipe and inspecting the contents of each package.
 
 Run:
-```bash
-bitbake <recipe-name>
-```
+
+\`\`\`bash
+
+bitbake
+
+\`\`\`
 
 Then inspect the generated packages using:
-```bash
-oe-pkgdata-util list-pkg-files <package-name>
-```
+
+\`\`\`bash
+
+oe-pkgdata-util list-pkg-files
+
+\`\`\`
 
 This command lists all the files contained in a particular package and ensures they are correctly assigned.
 
----
+\---
 
-### Conclusion
+\### 9. \*\*Best Practices\*\*
 
-This tutorial covers the process of package splitting during the `do_package()` stage in Yocto using the `PACKAGES` and `FILES` variables. With this knowledge, you can efficiently manage how your recipe’s files are divided into packages, ensuring that each package contains the right components for deployment on the target system.
+\- Ensure that development and runtime files are properly separated to avoid installing unnecessary files on production systems.
 
-In the example above, we created a custom package `${PN}-mydoc` that includes a `readme.txt` file in the documentation directory. Feel free to customize further for your specific project needs. Let me know if you have more questions related to Yocto Kirkstone!
+\- Use proper directory variables like \`${bindir}\`, \`${libdir}\`, etc., to make recipes portable across different platforms.
 
----
+\- Regularly verify the package contents with \`oe-pkgdata-util\` to prevent any files from being misplaced.
 
+\- Manage dependencies carefully using \`RDEPENDS\` and \`RRECOMMENDS\`.
+
+\---
+
+\### Conclusion
+
+This tutorial covers the process of package splitting during the \`do\_package()\` stage in Yocto using the \`PACKAGES\` and \`FILES\` variables. With this knowledge, you can efficiently manage how your recipe’s files are divided into packages, ensuring that each package contains the right components for deployment on the target system.
+
+Feel free to customize further for your specific project needs. Let me know if you have more questions related to Yocto Kirkstone!
